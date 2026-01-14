@@ -27,8 +27,8 @@ export class DailyShare {
   @Column({ name: 'user_id' })
   userId: string;
 
-  @Column({ type: 'enum', enum: Mood })
-  mood: Mood;
+  @Column()
+  mood: string;
 
   @Column({ type: 'text', nullable: true })
   content: string;

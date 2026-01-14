@@ -29,8 +29,8 @@ export class Patient {
   @Column()
   name: string;
 
-  @Column({ type: 'enum', enum: Gender, nullable: true })
-  gender: Gender;
+  @Column({ nullable: true })
+  gender: string;
 
   @Column({ name: 'birth_date', type: 'date', nullable: true })
   birthDate: Date;
@@ -38,8 +38,8 @@ export class Patient {
   @Column({ name: 'cancer_type_id' })
   cancerTypeId: number;
 
-  @Column({ name: 'cancer_stage', type: 'enum', enum: CancerStage, nullable: true })
-  cancerStage: CancerStage;
+  @Column({ name: 'cancer_stage', nullable: true })
+  cancerStage: string;
 
   @Column({ name: 'diagnosis_date', type: 'date' })
   diagnosisDate: Date;

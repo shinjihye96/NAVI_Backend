@@ -48,8 +48,8 @@ export class User {
   @Column({ unique: true })
   nickname: string;
 
-  @Column({ type: 'enum', enum: Gender, nullable: true })
-  gender: Gender;
+  @Column({ nullable: true })
+  gender: string;
 
   @Column({ name: 'birth_date', type: 'date', nullable: true })
   birthDate: Date;
@@ -57,11 +57,11 @@ export class User {
   @Column({ name: 'profile_image', nullable: true })
   profileImage: string;
 
-  @Column({ name: 'user_type', type: 'enum', enum: UserType })
-  userType: UserType;
+  @Column({ name: 'user_type' })
+  userType: string;
 
-  @Column({ name: 'user_status', type: 'enum', enum: UserStatus })
-  userStatus: UserStatus;
+  @Column({ name: 'user_status' })
+  userStatus: string;
 
   @Column({ nullable: true })
   region: string;
