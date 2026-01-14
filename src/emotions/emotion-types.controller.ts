@@ -16,9 +16,10 @@ export class EmotionTypesController {
   @Get()
   async findAll() {
     const data = await this.emotionTypeRepository.find({
-      select: ['type', 'label', 'imageUrl'],
       order: { id: 'ASC' },
     });
-    return ApiResponse.success(data);
+    return ApiResponse.success(
+      data.map(({ id, type, label, imageUrl }) => ({ id, type, label, imageUrl })),
+    );
   }
 }
