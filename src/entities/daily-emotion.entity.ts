@@ -29,8 +29,8 @@ export class DailyEmotion {
   @Column({ name: 'user_id' })
   userId: string;
 
-  @Column({ name: 'emotion_type', type: 'enum', enum: EmotionType })
-  emotionType: EmotionType;
+  @Column({ name: 'emotion_type' })
+  emotionType: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
