@@ -10,12 +10,11 @@ import { User } from './user.entity';
 import { DailyShare } from './daily-share.entity';
 
 export enum EmotionType {
-  CELEBRATE = 'celebrate',
-  PRAY = 'pray',
-  CHEER = 'cheer',
-  SAD = 'sad',
-  HAPPY = 'happy',
-  HEART = 'heart',
+  CLOUD = 'cloud',
+  RAIN = 'rain',
+  SUN_CLOUD = 'sun_cloud',
+  LIGHTNING = 'lightning',
+  SUN = 'sun',
 }
 
 @Entity('daily_emotions')
