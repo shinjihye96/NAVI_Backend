@@ -10,6 +10,7 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { DailySharesService } from './daily-shares.service';
 import { CreateDailyShareDto } from './dto/create-daily-share.dto';
 import { UpdateDailyShareDto } from './dto/update-daily-share.dto';
@@ -17,6 +18,7 @@ import { QueryDailyShareDto } from './dto/query-daily-share.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ApiResponse } from '../common/dto/api-response.dto';
 
+@ApiTags('Daily Shares')
 @Controller('daily-shares')
 @UseGuards(JwtAuthGuard)
 export class DailySharesController {
