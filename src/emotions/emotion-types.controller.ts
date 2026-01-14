@@ -1,9 +1,11 @@
 import { Controller, Get } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ApiResponse } from '../common/dto/api-response.dto';
 import { EmotionTypeEntity } from '../entities/emotion-type.entity';
 
+@ApiTags('Emotions')
 @Controller('emotion-types')
 export class EmotionTypesController {
   constructor(
