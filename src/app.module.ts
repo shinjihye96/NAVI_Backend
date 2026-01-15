@@ -8,6 +8,7 @@ import { EmotionsModule } from './emotions/emotions.module';
 import { FollowsModule } from './follows/follows.module';
 import { CancerTypesModule } from './cancer-types/cancer-types.module';
 import { UploadModule } from './upload/upload.module';
+import { DailyQuestionsModule } from './daily-questions/daily-questions.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { UploadModule } from './upload/upload.module';
     FollowsModule,
     CancerTypesModule,
     UploadModule,
+    DailyQuestionsModule,
   ],
 })
 export class AppModule {}

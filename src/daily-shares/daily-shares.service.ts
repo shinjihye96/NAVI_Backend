@@ -98,12 +98,17 @@ export class DailySharesService {
       .take(limit)
       .getMany();
 
-    // Get emotions count and user's emotion for each share
+    // Get emotions grouped by type and user's emotion for each share
     const itemsWithEmotions = await Promise.all(
       items.map(async (share) => {
-        const emotionsCount = await this.dailyEmotionRepository.count({
-          where: { dailyShareId: share.id },
-        });
+        // 감정별 개수 조회
+        const emotions = await this.dailyEmotionRepository
+          .createQueryBuilder('emotion')
+          .select('emotion.emotionType', 'type')
+          .addSelect('COUNT(*)', 'count')
+          .where('emotion.dailyShareId = :dailyShareId', { dailyShareId: share.id })
+          .groupBy('emotion.emotionType')
+          .getRawMany();
 
         const myEmotion = await this.dailyEmotionRepository.findOne({
           where: { dailyShareId: share.id, userId },
@@ -121,7 +126,7 @@ export class DailySharesService {
           mood: share.mood,
           content: share.content,
           imageUrl: share.imageUrl,
-          emotionsCount,
+          emotions: emotions.map((e) => ({ type: e.type, count: parseInt(e.count) })),
           myEmotion: myEmotion?.emotionType || null,
           createdAt: share.createdAt,
         };
