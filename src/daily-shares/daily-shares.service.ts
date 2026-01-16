@@ -81,12 +81,16 @@ export class DailySharesService {
 
     // Filter by user type
     if (filter === 'caregiver') {
-      queryBuilder.andWhere('user.userType IN (:...types)', {
-        types: [UserType.PATIENT_CAREGIVER, UserType.RECOVERED_CAREGIVER],
+      queryBuilder.andWhere('user.userType = :type', {
+        type: UserType.CAREGIVER,
       });
     } else if (filter === 'patient') {
-      queryBuilder.andWhere('user.userType IN (:...types)', {
-        types: [UserType.PATIENT, UserType.RECOVERED],
+      queryBuilder.andWhere('user.userType = :type', {
+        type: UserType.PATIENT,
+      });
+    } else if (filter === 'recovered') {
+      queryBuilder.andWhere('user.userType = :type', {
+        type: UserType.RECOVERED,
       });
     }
 
