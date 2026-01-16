@@ -4,11 +4,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { DailySharesModule } from './daily-shares/daily-shares.module';
-import { EmotionsModule } from './emotions/emotions.module';
 import { FollowsModule } from './follows/follows.module';
 import { CancerTypesModule } from './cancer-types/cancer-types.module';
 import { UploadModule } from './upload/upload.module';
 import { DailyQuestionsModule } from './daily-questions/daily-questions.module';
+import { ReactionsModule } from './reactions/reactions.module';
 
 @Module({
   imports: [
@@ -31,11 +31,11 @@ import { DailyQuestionsModule } from './daily-questions/daily-questions.module';
     AuthModule,
     UsersModule,
     DailySharesModule,
-    EmotionsModule,
     FollowsModule,
     CancerTypesModule,
     UploadModule,
     DailyQuestionsModule,
+    ReactionsModule,
   ],
 })
 export class AppModule {}

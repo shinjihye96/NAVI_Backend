@@ -7,7 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, In } from 'typeorm';
 import { DailyShare } from '../entities/daily-share.entity';
-import { DailyEmotion } from '../entities/daily-emotion.entity';
+import { PostReaction } from '../entities/post-reaction.entity';
 import { User, UserType } from '../entities/user.entity';
 import { CreateDailyShareDto } from './dto/create-daily-share.dto';
 import { UpdateDailyShareDto } from './dto/update-daily-share.dto';
@@ -18,8 +18,8 @@ export class DailySharesService {
   constructor(
     @InjectRepository(DailyShare)
     private dailyShareRepository: Repository<DailyShare>,
-    @InjectRepository(DailyEmotion)
-    private dailyEmotionRepository: Repository<DailyEmotion>,
+    @InjectRepository(PostReaction)
+    private postReactionRepository: Repository<PostReaction>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
   ) {}
@@ -107,41 +107,45 @@ export class DailySharesService {
     // 모든 게시물 ID 추출
     const shareIds = items.map((share) => share.id);
 
-    // 감정 데이터와 내 감정 병렬 조회
-    const [allEmotions, myEmotions] = shareIds.length > 0
+    // 리액션 데이터와 내 리액션 병렬 조회
+    const [allReactions, myReactions] = shareIds.length > 0
       ? await Promise.all([
-          this.dailyEmotionRepository
-            .createQueryBuilder('emotion')
-            .select('emotion.dailyShareId', 'dailyShareId')
-            .addSelect('emotion.emotionType', 'type')
+          this.postReactionRepository
+            .createQueryBuilder('reaction')
+            .select('reaction.daily_share_id', 'dailyShareId')
+            .addSelect('reaction.reaction_type', 'type')
             .addSelect('COUNT(*)', 'count')
-            .where('emotion.dailyShareId IN (:...shareIds)', { shareIds })
-            .groupBy('emotion.dailyShareId')
-            .addGroupBy('emotion.emotionType')
+            .where('reaction.daily_share_id IN (:...shareIds)', { shareIds })
+            .groupBy('reaction.daily_share_id')
+            .addGroupBy('reaction.reaction_type')
             .getRawMany(),
-          this.dailyEmotionRepository.find({
+          this.postReactionRepository.find({
             where: { dailyShareId: In(shareIds), userId },
           }),
         ])
       : [[], []];
 
     // Map으로 변환하여 O(1) 조회
-    const emotionsMap = new Map<string, { type: string; count: number }[]>();
-    for (const emotion of allEmotions) {
-      const key = emotion.dailyShareId;
-      if (!emotionsMap.has(key)) {
-        emotionsMap.set(key, []);
+    const reactionsMap = new Map<string, { type: string; count: number }[]>();
+    for (const reaction of allReactions) {
+      const key = reaction.dailyShareId;
+      if (!reactionsMap.has(key)) {
+        reactionsMap.set(key, []);
       }
-      emotionsMap.get(key)!.push({ type: emotion.type, count: parseInt(emotion.count) });
+      reactionsMap.get(key)!.push({ type: reaction.type, count: parseInt(reaction.count) });
     }
 
-    const myEmotionMap = new Map<string, string>();
-    for (const emotion of myEmotions) {
-      myEmotionMap.set(emotion.dailyShareId, emotion.emotionType);
+    const myReactionsMap = new Map<string, string[]>();
+    for (const reaction of myReactions) {
+      const key = reaction.dailyShareId;
+      if (!myReactionsMap.has(key)) {
+        myReactionsMap.set(key, []);
+      }
+      myReactionsMap.get(key)!.push(reaction.reactionType);
     }
 
     // 결과 조합
-    const itemsWithEmotions = items.map((share) => ({
+    const itemsWithReactions = items.map((share) => ({
       id: share.id,
       user: {
         id: share.user.id,
@@ -153,13 +157,13 @@ export class DailySharesService {
       mood: share.mood,
       content: share.content,
       imageUrl: share.imageUrl,
-      emotions: emotionsMap.get(share.id) || [],
-      myEmotion: myEmotionMap.get(share.id) || null,
+      reactions: reactionsMap.get(share.id) || [],
+      myReactions: myReactionsMap.get(share.id) || [],
       createdAt: share.createdAt,
     }));
 
     return {
-      items: itemsWithEmotions,
+      items: itemsWithReactions,
       pagination: {
         page,
         limit,
@@ -183,16 +187,16 @@ export class DailySharesService {
       throw new ForbiddenException('비공개 게시물입니다.');
     }
 
-    // Get emotions grouped by type
-    const emotions = await this.dailyEmotionRepository
-      .createQueryBuilder('emotion')
-      .select('emotion.emotionType', 'type')
+    // Get reactions grouped by type
+    const reactions = await this.postReactionRepository
+      .createQueryBuilder('reaction')
+      .select('reaction.reaction_type', 'type')
       .addSelect('COUNT(*)', 'count')
-      .where('emotion.dailyShareId = :dailyShareId', { dailyShareId: id })
-      .groupBy('emotion.emotionType')
+      .where('reaction.daily_share_id = :dailyShareId', { dailyShareId: id })
+      .groupBy('reaction.reaction_type')
       .getRawMany();
 
-    const myEmotion = await this.dailyEmotionRepository.findOne({
+    const myReactions = await this.postReactionRepository.find({
       where: { dailyShareId: id, userId },
     });
 
@@ -208,8 +212,8 @@ export class DailySharesService {
       content: dailyShare.content,
       imageUrl: dailyShare.imageUrl,
       isPrivate: dailyShare.isPrivate,
-      emotions: emotions.map((e) => ({ type: e.type, count: parseInt(e.count) })),
-      myEmotion: myEmotion?.emotionType || null,
+      reactions: reactions.map((e) => ({ type: e.type, count: parseInt(e.count) })),
+      myReactions: myReactions.map((r) => r.reactionType),
       createdAt: dailyShare.createdAt,
     };
   }
