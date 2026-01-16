@@ -4,7 +4,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { DailySharesModule } from './daily-shares/daily-shares.module';
-import { EmotionsModule } from './emotions/emotions.module';
 import { FollowsModule } from './follows/follows.module';
 import { CancerTypesModule } from './cancer-types/cancer-types.module';
 import { UploadModule } from './upload/upload.module';
@@ -32,7 +31,6 @@ import { ReactionsModule } from './reactions/reactions.module';
     AuthModule,
     UsersModule,
     DailySharesModule,
-    EmotionsModule,
     FollowsModule,
     CancerTypesModule,
     UploadModule,
