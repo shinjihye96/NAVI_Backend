@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between } from 'typeorm';
+import { Repository, Between, In } from 'typeorm';
 import { DailyShare } from '../entities/daily-share.entity';
 import { DailyEmotion } from '../entities/daily-emotion.entity';
 import { User, UserType } from '../entities/user.entity';
@@ -81,57 +81,82 @@ export class DailySharesService {
 
     // Filter by user type
     if (filter === 'caregiver') {
-      queryBuilder.andWhere('user.userType IN (:...types)', {
-        types: [UserType.PATIENT_CAREGIVER, UserType.RECOVERED_CAREGIVER],
+      queryBuilder.andWhere('user.userType = :type', {
+        type: UserType.CAREGIVER,
       });
     } else if (filter === 'patient') {
-      queryBuilder.andWhere('user.userType IN (:...types)', {
-        types: [UserType.PATIENT, UserType.RECOVERED],
+      queryBuilder.andWhere('user.userType = :type', {
+        type: UserType.PATIENT,
+      });
+    } else if (filter === 'recovered') {
+      queryBuilder.andWhere('user.userType = :type', {
+        type: UserType.RECOVERED,
       });
     }
 
-    const totalCount = await queryBuilder.getCount();
+    // count와 items 병렬 조회
+    const [totalCount, items] = await Promise.all([
+      queryBuilder.getCount(),
+      queryBuilder
+        .orderBy('dailyShare.createdAt', 'DESC')
+        .skip((page - 1) * limit)
+        .take(limit)
+        .getMany(),
+    ]);
 
-    const items = await queryBuilder
-      .orderBy('dailyShare.createdAt', 'DESC')
-      .skip((page - 1) * limit)
-      .take(limit)
-      .getMany();
+    // 모든 게시물 ID 추출
+    const shareIds = items.map((share) => share.id);
 
-    // Get emotions grouped by type and user's emotion for each share
-    const itemsWithEmotions = await Promise.all(
-      items.map(async (share) => {
-        // 감정별 개수 조회
-        const emotions = await this.dailyEmotionRepository
-          .createQueryBuilder('emotion')
-          .select('emotion.emotionType', 'type')
-          .addSelect('COUNT(*)', 'count')
-          .where('emotion.dailyShareId = :dailyShareId', { dailyShareId: share.id })
-          .groupBy('emotion.emotionType')
-          .getRawMany();
+    // 감정 데이터와 내 감정 병렬 조회
+    const [allEmotions, myEmotions] = shareIds.length > 0
+      ? await Promise.all([
+          this.dailyEmotionRepository
+            .createQueryBuilder('emotion')
+            .select('emotion.dailyShareId', 'dailyShareId')
+            .addSelect('emotion.emotionType', 'type')
+            .addSelect('COUNT(*)', 'count')
+            .where('emotion.dailyShareId IN (:...shareIds)', { shareIds })
+            .groupBy('emotion.dailyShareId')
+            .addGroupBy('emotion.emotionType')
+            .getRawMany(),
+          this.dailyEmotionRepository.find({
+            where: { dailyShareId: In(shareIds), userId },
+          }),
+        ])
+      : [[], []];
 
-        const myEmotion = await this.dailyEmotionRepository.findOne({
-          where: { dailyShareId: share.id, userId },
-        });
+    // Map으로 변환하여 O(1) 조회
+    const emotionsMap = new Map<string, { type: string; count: number }[]>();
+    for (const emotion of allEmotions) {
+      const key = emotion.dailyShareId;
+      if (!emotionsMap.has(key)) {
+        emotionsMap.set(key, []);
+      }
+      emotionsMap.get(key)!.push({ type: emotion.type, count: parseInt(emotion.count) });
+    }
 
-        return {
-          id: share.id,
-          user: {
-            id: share.user.id,
-            nickname: share.user.nickname,
-            profileImage: share.user.profileImage,
-            userType: share.user.userType,
-            userStatus: share.user.userStatus,
-          },
-          mood: share.mood,
-          content: share.content,
-          imageUrl: share.imageUrl,
-          emotions: emotions.map((e) => ({ type: e.type, count: parseInt(e.count) })),
-          myEmotion: myEmotion?.emotionType || null,
-          createdAt: share.createdAt,
-        };
-      }),
-    );
+    const myEmotionMap = new Map<string, string>();
+    for (const emotion of myEmotions) {
+      myEmotionMap.set(emotion.dailyShareId, emotion.emotionType);
+    }
+
+    // 결과 조합
+    const itemsWithEmotions = items.map((share) => ({
+      id: share.id,
+      user: {
+        id: share.user.id,
+        nickname: share.user.nickname,
+        profileImage: share.user.profileImage,
+        userType: share.user.userType,
+        userStatus: share.user.userStatus,
+      },
+      mood: share.mood,
+      content: share.content,
+      imageUrl: share.imageUrl,
+      emotions: emotionsMap.get(share.id) || [],
+      myEmotion: myEmotionMap.get(share.id) || null,
+      createdAt: share.createdAt,
+    }));
 
     return {
       items: itemsWithEmotions,
