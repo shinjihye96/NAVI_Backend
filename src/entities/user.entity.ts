@@ -12,10 +12,9 @@ import { DailyShare } from './daily-share.entity';
 import { Follow } from './follow.entity';
 
 export enum UserType {
-  PATIENT_CAREGIVER = 'patient_caregiver',
-  RECOVERED_CAREGIVER = 'recovered_caregiver',
-  PATIENT = 'patient',
-  RECOVERED = 'recovered',
+  CAREGIVER = '보호자',
+  PATIENT = '소아환아',
+  RECOVERED = '완치자',
 }
 
 export enum UserStatus {
