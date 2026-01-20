@@ -9,6 +9,11 @@ import { DailyQuestion } from '../entities/daily-question.entity';
 import { DailyAnswer } from '../entities/daily-answer.entity';
 import { CreateAnswerDto } from './dto/create-answer.dto';
 import { QueryAnswerDto, QueryFeedDto } from './dto/query-answer.dto';
+import {
+  getKSTDateString,
+  getKSTDayOfYear,
+  getKSTRemainingTime,
+} from '../common/utils/date.util';
 
 @Injectable()
 export class DailyQuestionsService {
@@ -30,16 +35,13 @@ export class DailyQuestionsService {
       throw new NotFoundException('등록된 질문이 없습니다.');
     }
 
-    // 날짜 기반으로 질문 순환 (오늘 날짜 기준)
-    const today = new Date();
-    const startOfYear = new Date(today.getFullYear(), 0, 0);
-    const diff = today.getTime() - startOfYear.getTime();
-    const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
+    // 한국 시간 기준 날짜 기반으로 질문 순환
+    const dayOfYear = getKSTDayOfYear();
     const questionIndex = dayOfYear % questions.length;
     const todayQuestion = questions[questionIndex];
 
-    // 오늘 날짜로 이미 답변했는지 확인
-    const todayDateStr = today.toISOString().split('T')[0];
+    // 한국 시간 기준 오늘 날짜로 이미 답변했는지 확인
+    const todayDateStr = getKSTDateString();
     const existingAnswer = await this.answerRepository.findOne({
       where: {
         userId,
@@ -48,18 +50,14 @@ export class DailyQuestionsService {
       },
     });
 
-    // 남은 시간 계산
-    const endOfDay = new Date(today);
-    endOfDay.setHours(23, 59, 59, 999);
-    const remainingMs = endOfDay.getTime() - today.getTime();
-    const remainingHours = Math.floor(remainingMs / (1000 * 60 * 60));
-    const remainingMinutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+    // 한국 시간 기준 자정까지 남은 시간
+    const { hours, minutes } = getKSTRemainingTime();
 
     return {
       id: todayQuestion.id,
       content: todayQuestion.content,
       hasAnswered: !!existingAnswer,
-      remainingTime: `${remainingHours}시간 ${remainingMinutes}분`,
+      remainingTime: `${hours}시간 ${minutes}분`,
     };
   }
 
@@ -75,9 +73,8 @@ export class DailyQuestionsService {
       throw new NotFoundException('질문을 찾을 수 없습니다.');
     }
 
-    // 오늘 날짜
-    const today = new Date();
-    const todayDateStr = today.toISOString().split('T')[0];
+    // 한국 시간 기준 오늘 날짜
+    const todayDateStr = getKSTDateString();
     const answeredDate = new Date(todayDateStr);
 
     // 이미 답변했는지 확인
@@ -151,9 +148,9 @@ export class DailyQuestionsService {
   async getFeed(userId: string, queryDto: QueryFeedDto) {
     const { date, page = 1, limit = 20 } = queryDto;
 
-    // 날짜 설정 (기본: 오늘)
-    const targetDate = date ? new Date(date) : new Date();
-    const targetDateStr = targetDate.toISOString().split('T')[0];
+    // 한국 시간 기준 날짜 설정 (기본: 오늘)
+    const targetDateStr = date || getKSTDateString();
+    const targetDate = new Date(targetDateStr);
 
     // 해당 날짜의 질문 가져오기
     const questions = await this.questionRepository.find({
@@ -165,9 +162,7 @@ export class DailyQuestionsService {
       throw new NotFoundException('등록된 질문이 없습니다.');
     }
 
-    const startOfYear = new Date(targetDate.getFullYear(), 0, 0);
-    const diff = targetDate.getTime() - startOfYear.getTime();
-    const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const dayOfYear = getKSTDayOfYear(targetDate);
     const questionIndex = dayOfYear % questions.length;
     const targetQuestion = questions[questionIndex];
 

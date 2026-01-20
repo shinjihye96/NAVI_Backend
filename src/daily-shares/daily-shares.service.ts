@@ -12,6 +12,7 @@ import { User, UserType } from '../entities/user.entity';
 import { CreateDailyShareDto } from './dto/create-daily-share.dto';
 import { UpdateDailyShareDto } from './dto/update-daily-share.dto';
 import { QueryDailyShareDto } from './dto/query-daily-share.dto';
+import { getKSTStartOfDay, getKSTEndOfDay } from '../common/utils/date.util';
 
 @Injectable()
 export class DailySharesService {
@@ -25,16 +26,14 @@ export class DailySharesService {
   ) {}
 
   async create(userId: string, createDto: CreateDailyShareDto) {
-    // Check if already written today
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    // 한국 시간 기준 오늘 작성 여부 확인
+    const todayStart = getKSTStartOfDay();
+    const todayEnd = getKSTEndOfDay();
 
     const existingShare = await this.dailyShareRepository.findOne({
       where: {
         userId,
-        createdAt: Between(today, tomorrow),
+        createdAt: Between(todayStart, todayEnd),
       },
     });
 
@@ -67,12 +66,11 @@ export class DailySharesService {
       .leftJoinAndSelect('dailyShare.user', 'user')
       .where('dailyShare.isPrivate = :isPrivate', { isPrivate: false });
 
-    // Filter by date
+    // Filter by date (한국 시간 기준)
     if (date) {
-      const startDate = new Date(date);
-      startDate.setHours(0, 0, 0, 0);
-      const endDate = new Date(date);
-      endDate.setHours(23, 59, 59, 999);
+      const targetDate = new Date(date);
+      const startDate = getKSTStartOfDay(targetDate);
+      const endDate = getKSTEndOfDay(targetDate);
       queryBuilder.andWhere('dailyShare.createdAt BETWEEN :startDate AND :endDate', {
         startDate,
         endDate,
@@ -257,15 +255,14 @@ export class DailySharesService {
   }
 
   async checkToday(userId: string) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    // 한국 시간 기준 오늘 작성 여부 확인
+    const todayStart = getKSTStartOfDay();
+    const todayEnd = getKSTEndOfDay();
 
     const todayShare = await this.dailyShareRepository.findOne({
       where: {
         userId,
-        createdAt: Between(today, tomorrow),
+        createdAt: Between(todayStart, todayEnd),
       },
     });
 
