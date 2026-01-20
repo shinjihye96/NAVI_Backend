@@ -23,7 +23,7 @@ export class DailyQuestionsService {
     // 활성화된 질문들 조회
     const questions = await this.questionRepository.find({
       where: { isActive: true },
-      order: { id: 'ASC' },
+      order: { questionOrder: 'ASC' },
     });
 
     if (questions.length === 0) {
@@ -158,7 +158,7 @@ export class DailyQuestionsService {
     // 해당 날짜의 질문 가져오기
     const questions = await this.questionRepository.find({
       where: { isActive: true },
-      order: { id: 'ASC' },
+      order: { questionOrder: 'ASC' },
     });
 
     if (questions.length === 0) {
