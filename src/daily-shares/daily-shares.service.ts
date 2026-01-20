@@ -111,11 +111,11 @@ export class DailySharesService {
           this.postReactionRepository
             .createQueryBuilder('reaction')
             .select('reaction.daily_share_id', 'dailyShareId')
-            .addSelect('reaction.reaction_type', 'type')
+            .addSelect('reaction.emotion_type', 'type')
             .addSelect('COUNT(*)', 'count')
             .where('reaction.daily_share_id IN (:...shareIds)', { shareIds })
             .groupBy('reaction.daily_share_id')
-            .addGroupBy('reaction.reaction_type')
+            .addGroupBy('reaction.emotion_type')
             .getRawMany(),
           this.postReactionRepository.find({
             where: { dailyShareId: In(shareIds), userId },
@@ -188,10 +188,10 @@ export class DailySharesService {
     // Get reactions grouped by type
     const reactions = await this.postReactionRepository
       .createQueryBuilder('reaction')
-      .select('reaction.reaction_type', 'type')
+      .select('reaction.emotion_type', 'type')
       .addSelect('COUNT(*)', 'count')
       .where('reaction.daily_share_id = :dailyShareId', { dailyShareId: id })
-      .groupBy('reaction.reaction_type')
+      .groupBy('reaction.emotion_type')
       .getRawMany();
 
     const myReactions = await this.postReactionRepository.find({

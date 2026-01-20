@@ -69,10 +69,10 @@ export class ReactionsService {
   async getReactionCounts(dailyShareId: string) {
     const counts = await this.postReactionRepository
       .createQueryBuilder('reaction')
-      .select('reaction.reaction_type', 'type')
+      .select('reaction.emotion_type', 'type')
       .addSelect('COUNT(*)', 'count')
       .where('reaction.daily_share_id = :dailyShareId', { dailyShareId })
-      .groupBy('reaction.reaction_type')
+      .groupBy('reaction.emotion_type')
       .getRawMany();
 
     return counts.map((c) => ({
@@ -87,11 +87,11 @@ export class ReactionsService {
     const counts = await this.postReactionRepository
       .createQueryBuilder('reaction')
       .select('reaction.daily_share_id', 'dailyShareId')
-      .addSelect('reaction.reaction_type', 'type')
+      .addSelect('reaction.emotion_type', 'type')
       .addSelect('COUNT(*)', 'count')
       .where('reaction.daily_share_id IN (:...dailyShareIds)', { dailyShareIds })
       .groupBy('reaction.daily_share_id')
-      .addGroupBy('reaction.reaction_type')
+      .addGroupBy('reaction.emotion_type')
       .getRawMany();
 
     const result = new Map<string, { type: string; count: number }[]>();

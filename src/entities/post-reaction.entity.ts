@@ -18,7 +18,7 @@ export enum ReactionType {
   CHEER = 'cheer',
 }
 
-@Entity('post_reactions')
+@Entity('daily_emotions')
 @Unique(['dailyShareId', 'userId', 'reactionType'])
 export class PostReaction {
   @PrimaryGeneratedColumn('uuid')
@@ -30,7 +30,7 @@ export class PostReaction {
   @Column({ name: 'user_id' })
   userId: string;
 
-  @Column({ name: 'reaction_type', type: 'varchar' })
+  @Column({ name: 'emotion_type', type: 'varchar' })
   reactionType: ReactionType;
 
   @CreateDateColumn({ name: 'created_at' })
