@@ -60,3 +60,13 @@ export function getKSTRemainingTime(): { hours: number; minutes: number } {
 
   return { hours, minutes };
 }
+
+/**
+ * 한국 시간 기준 오늘 자정 ISO 문자열 (프론트엔드 카운트다운용)
+ */
+export function getKSTMidnightISO(): string {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowStr = getKSTDateString(tomorrow);
+  return new Date(tomorrowStr + 'T00:00:00+09:00').toISOString();
+}

@@ -12,7 +12,7 @@ import { QueryAnswerDto, QueryFeedDto } from './dto/query-answer.dto';
 import {
   getKSTDateString,
   getKSTDayOfYear,
-  getKSTRemainingTime,
+  getKSTMidnightISO,
 } from '../common/utils/date.util';
 
 @Injectable()
@@ -50,14 +50,11 @@ export class DailyQuestionsService {
       },
     });
 
-    // 한국 시간 기준 자정까지 남은 시간
-    const { hours, minutes } = getKSTRemainingTime();
-
     return {
       id: todayQuestion.id,
       content: todayQuestion.content,
       hasAnswered: !!existingAnswer,
-      remainingTime: `${hours}시간 ${minutes}분`,
+      expiresAt: getKSTMidnightISO(),
     };
   }
 
@@ -71,6 +68,14 @@ export class DailyQuestionsService {
 
     if (!question) {
       throw new NotFoundException('질문을 찾을 수 없습니다.');
+    }
+
+    // 질문 활성 상태 확인
+    if (!question.isActive) {
+      throw new BadRequestException({
+        code: 'QUESTION_INACTIVE',
+        message: '이 질문은 더 이상 활성 상태가 아닙니다. 새 질문을 확인해주세요.',
+      });
     }
 
     // 한국 시간 기준 오늘 날짜
