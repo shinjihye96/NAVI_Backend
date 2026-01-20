@@ -15,6 +15,9 @@ export class DailyQuestion {
   @Column({ type: 'varchar', length: 200 })
   content: string;
 
+  @Column({ name: 'question_order', type: 'int' })
+  questionOrder: number;
+
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive: boolean;
 
