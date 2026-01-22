@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PostReaction, ReactionType } from '../entities/post-reaction.entity';
 import { DailyShare } from '../entities/daily-share.entity';
+import { EmotionTypeEntity } from '../entities/emotion-type.entity';
 import { ToggleReactionDto } from './dto/toggle-reaction.dto';
 
 @Injectable()
@@ -12,7 +13,21 @@ export class ReactionsService {
     private postReactionRepository: Repository<PostReaction>,
     @InjectRepository(DailyShare)
     private dailyShareRepository: Repository<DailyShare>,
+    @InjectRepository(EmotionTypeEntity)
+    private emotionTypeRepository: Repository<EmotionTypeEntity>,
   ) {}
+
+  async getEmotionTypes() {
+    const types = await this.emotionTypeRepository.find({
+      order: { id: 'ASC' },
+    });
+    return types.map((t) => ({
+      id: t.id,
+      type: t.type,
+      label: t.label,
+      imageUrl: t.imageUrl,
+    }));
+  }
 
   async toggle(dailyShareId: string, userId: string, dto: ToggleReactionDto) {
     const dailyShare = await this.dailyShareRepository.findOne({
