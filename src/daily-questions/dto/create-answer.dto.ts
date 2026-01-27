@@ -7,10 +7,11 @@ export class CreateAnswerDto {
   @IsInt()
   questionId: number;
 
-  @ApiProperty({ description: '답변 내용', example: '오늘 병원 검사 결과가 좋게 나왔어요!', maxLength: 500 })
+  @ApiPropertyOptional({ description: '답변 내용', example: '오늘 병원 검사 결과가 좋게 나왔어요!', maxLength: 500 })
+  @IsOptional()
   @IsString()
   @MaxLength(500)
-  content: string;
+  content?: string;
 
   @ApiPropertyOptional({ description: '이미지 URL', example: 'https://example.com/image.jpg' })
   @IsOptional()
