@@ -12,11 +12,11 @@ import { User } from './user.entity';
 import { DailyEmotion } from './daily-emotion.entity';
 
 export enum Mood {
-  VERY_GOOD = 'very_good',
-  GOOD = 'good',
-  NORMAL = 'normal',
-  BAD = 'bad',
-  VERY_BAD = 'very_bad',
+  SUN = 'sun',
+  SUN_CLOUD = 'sun_cloud',
+  CLOUD = 'cloud',
+  RAIN = 'rain',
+  LIGHTNING = 'lightning',
 }
 
 @Entity('daily_shares')
