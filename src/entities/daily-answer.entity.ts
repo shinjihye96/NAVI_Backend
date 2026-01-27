@@ -30,7 +30,7 @@ export class DailyAnswer {
   @Column({ name: 'question_id', type: 'int' })
   questionId: number;
 
-  @Column({ type: 'varchar', length: 500 })
+  @Column({ type: 'varchar', length: 500, nullable: true })
   content: string;
 
   @Column({ name: 'image_url', type: 'varchar', length: 500, nullable: true })
