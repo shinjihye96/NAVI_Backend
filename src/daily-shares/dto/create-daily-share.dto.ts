@@ -3,7 +3,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Mood } from '../../entities/daily-share.entity';
 
 export class CreateDailyShareDto {
-  @ApiProperty({ description: '오늘의 기분', enum: Mood, example: 'good' })
+  @ApiProperty({ description: '오늘의 기분', enum: Mood, example: 'sun' })
   @IsEnum(Mood)
   mood: Mood;
 
