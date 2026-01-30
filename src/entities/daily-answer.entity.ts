@@ -11,10 +11,10 @@ import { User } from './user.entity';
 import { DailyQuestion } from './daily-question.entity';
 
 export enum Weather {
-  SUNNY = 'sunny',
-  PARTLY_CLOUDY = 'partly_cloudy',
-  CLOUDY = 'cloudy',
-  RAINY = 'rainy',
+  SUN = 'sun',
+  SUN_CLOUD = 'sun_cloud',
+  CLOUD = 'cloud',
+  RAIN = 'rain',
   LIGHTNING = 'lightning',
 }
 

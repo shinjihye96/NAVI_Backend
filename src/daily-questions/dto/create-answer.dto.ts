@@ -21,7 +21,7 @@ export class CreateAnswerDto {
   @ApiProperty({
     description: '날씨',
     enum: Weather,
-    example: 'sunny',
+    example: 'sun',
   })
   @IsEnum(Weather)
   weather: Weather;
