@@ -62,7 +62,7 @@ export class DailyQuestionsController {
           questionId: 1,
           content: '오늘 가족과 함께한 시간이 감사했습니다.',
           imageUrl: 'https://example.com/image.jpg',
-          weather: 'sunny',
+          weather: 'sun',
           answeredDate: '2024-01-15',
           createdAt: '2024-01-15T06:30:00.000Z'
         }
