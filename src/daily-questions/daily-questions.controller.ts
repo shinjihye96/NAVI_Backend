@@ -12,6 +12,7 @@ import { DailyQuestionsService } from './daily-questions.service';
 import { CreateAnswerDto } from './dto/create-answer.dto';
 import { QueryAnswerDto, QueryFeedDto } from './dto/query-answer.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Public } from '../auth/decorators/public.decorator';
 import { ApiResponse } from '../common/dto/api-response.dto';
 
 @ApiTags('Daily Questions')
@@ -22,6 +23,7 @@ export class DailyQuestionsController {
   constructor(private readonly dailyQuestionsService: DailyQuestionsService) {}
 
   @Get('today')
+  @Public()
   @ApiOperation({
     summary: '오늘의 질문 조회',
     description: '오늘 날짜 기준으로 활성화된 질문 중 1개를 반환합니다. expiresAt은 한국시간 자정 ISO 문자열입니다.'
@@ -41,8 +43,8 @@ export class DailyQuestionsController {
       }
     }
   })
-  async getTodayQuestion(@Request() req: { user: { id: string } }) {
-    const data = await this.dailyQuestionsService.getTodayQuestion(req.user.id);
+  async getTodayQuestion(@Request() req: { user?: { id: string } }) {
+    const data = await this.dailyQuestionsService.getTodayQuestion(req.user?.id);
     return ApiResponse.success(data);
   }
 
