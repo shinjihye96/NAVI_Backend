@@ -16,6 +16,7 @@ import { CreateDailyShareDto } from './dto/create-daily-share.dto';
 import { UpdateDailyShareDto } from './dto/update-daily-share.dto';
 import { QueryDailyShareDto } from './dto/query-daily-share.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Public } from '../auth/decorators/public.decorator';
 import { ApiResponse } from '../common/dto/api-response.dto';
 
 @ApiTags('Daily Shares')
@@ -36,12 +37,13 @@ export class DailySharesController {
   }
 
   @Get()
+  @Public()
   @ApiOperation({ summary: '하루공유 목록 조회', description: '하루공유 목록을 조회합니다. 필터링 및 페이지네이션을 지원합니다.' })
   async findAll(
-    @Request() req: { user: { id: string } },
+    @Request() req: { user?: { id: string } },
     @Query() queryDto: QueryDailyShareDto,
   ) {
-    const data = await this.dailySharesService.findAll(req.user.id, queryDto);
+    const data = await this.dailySharesService.findAll(req.user?.id, queryDto);
     return ApiResponse.success(data);
   }
 
