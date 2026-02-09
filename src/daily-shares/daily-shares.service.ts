@@ -58,7 +58,7 @@ export class DailySharesService {
     };
   }
 
-  async findAll(userId: string, queryDto: QueryDailyShareDto) {
+  async findAll(userId: string | undefined, queryDto: QueryDailyShareDto) {
     const { filter = 'all', date, page = 1, limit = 20 } = queryDto;
 
     const queryBuilder = this.dailyShareRepository
@@ -117,9 +117,11 @@ export class DailySharesService {
             .groupBy('reaction.daily_share_id')
             .addGroupBy('reaction.emotion_type')
             .getRawMany(),
-          this.postReactionRepository.find({
-            where: { dailyShareId: In(shareIds), userId },
-          }),
+          userId
+            ? this.postReactionRepository.find({
+                where: { dailyShareId: In(shareIds), userId },
+              })
+            : Promise.resolve([]),
         ])
       : [[], []];
 

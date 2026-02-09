@@ -24,7 +24,7 @@ export class DailyQuestionsService {
     private answerRepository: Repository<DailyAnswer>,
   ) {}
 
-  async getTodayQuestion(userId: string) {
+  async getTodayQuestion(userId?: string) {
     // 활성화된 질문들 조회
     const questions = await this.questionRepository.find({
       where: { isActive: true },
@@ -40,20 +40,24 @@ export class DailyQuestionsService {
     const questionIndex = dayOfYear % questions.length;
     const todayQuestion = questions[questionIndex];
 
-    // 한국 시간 기준 오늘 날짜로 이미 답변했는지 확인
-    const todayDateStr = getKSTDateString();
-    const existingAnswer = await this.answerRepository.findOne({
-      where: {
-        userId,
-        questionId: todayQuestion.id,
-        answeredDate: new Date(todayDateStr),
-      },
-    });
+    // 한국 시간 기준 오늘 날짜로 이미 답변했는지 확인 (로그인한 경우에만)
+    let hasAnswered = false;
+    if (userId) {
+      const todayDateStr = getKSTDateString();
+      const existingAnswer = await this.answerRepository.findOne({
+        where: {
+          userId,
+          questionId: todayQuestion.id,
+          answeredDate: new Date(todayDateStr),
+        },
+      });
+      hasAnswered = !!existingAnswer;
+    }
 
     return {
       id: todayQuestion.id,
       content: todayQuestion.content,
-      hasAnswered: !!existingAnswer,
+      hasAnswered,
       expiresAt: getKSTMidnightISO(),
     };
   }
